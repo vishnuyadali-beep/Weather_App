@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <title>Weather App</title>
+        <link rel="icon" type="image/x-icon" href="images/weather-app.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon-iphone60x60.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="images/apple-touchicon-ipad-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touchicon-iphone-retina-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="images/apple-touchicon-ipad-retina-152x152.png">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    </head>
+<body class="bg-dark">
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card" >
+            <div class="card-body">
+                <div class="row">
+                    <div class="col d-flex flex-column justify-content-center">
+                        <div class="text-center align-items-center" style="color: red;">
+                            <h2><i class="bi bi-geo-alt-fill"></i></h2>
+                            <h2 class="text-center">Cookeville</h2>
+                        </div>
+                    </div>
+                    <div class="col border-start">
+                        <div class="text-center" id="weatherReport">
+                            <h3 class="text-center">Weather Conditions</h3>
+                            <i class="bi bi-cloud fs-1" id="weatherImage"></i>
+                            <h4 class="text-center" id="weatherDescription"></h4>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col ms-3">
+                                <i class="bi bi-thermometer-half fs-1" id="thermometer"></i>
+                                <h4 id="temperature"></h4>
+                            </div>
+                            <div class="col ms-3">
+                                <i class="bi bi-droplet-half fs-1" id="waterDrop" style="color: blue;"></i>
+                                <h4 id="humidity"></h4>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // This API URL is attributed to Open Meteo and all data being fetched is coming from them. Here is the link.
+        // Link:https://open-meteo.com/en/docs
+        const strBaseURL = "https://api.open-meteo.com/v1/forecast?latitude=36.1682&longitude=-85.5016&hourly=temperature_2m,relative_humidity_2m,weather_code&current=temperature_2m,relative_humidity_2m,weather_code&temperature_unit=fahrenheit"
+        
+
+        fetch(strBaseURL, 
+            {
+                method:'GET'
+            }
+        )
+        .then(response => {
+            //if response is good then we are going to do this
+            return response.json()
+        })
+        .then(data =>{
+            //console.log(data)
+            document.querySelector('#temperature').textContent = data.current.temperature_2m + "°"
+            document.querySelector('#humidity').textContent = data.current.relative_humidity_2m + "%"
+
+            if(data.current.temperature_2m < 60){
+                document.querySelector('#thermometer').style.color = "lightblue"
+            }
+            if(data.current.temperature_2m > 60 && data.current.temperature_2m < 75){
+                document.querySelector('#thermometer').style.color = "yellow"
+            }
+            if(data.current.temperature_2m >= 75){
+                document.querySelector('#thermometer').style.color = "red"
+            }
+
+            if(data.current.relative_humidity_2m < 30){
+                document.querySelector('#waterDrop').classList.remove("bi-droplet-half")
+                document.querySelector('#waterDrop').classList.add("bi-droplet")
+            }
+            //The default humidty image I have set is just the half-filled one so it won't change if it isn't in either of these ranges.
+            if(data.current.relative_humidity_2m > 50){
+                document.querySelector('#waterDrop').classList.remove("bi-droplet-half")
+                document.querySelector('#waterDrop').classList.add("bi-droplet-fill")
+            }
+
+            //Clear Sky
+            if(data.current.weather_code == 0){
+                document.querySelector('#weatherImage').classList.remove("bi-cloud")
+                document.querySelector('#weatherImage').classList.add("bi-brightness-high-fill")
+                document.querySelector('#weatherImage').style.color = "yellow"
+                document.querySelector('#weatherDescription').textContent = "Clear Sky"
+            }
+
+            //Partly Cloudy
+            if(data.current.weather_code > 0 && data.current.weather_code <= 3){
+                //Default is already set to an empty cloud which I will be using for "Partly Cloudy"
+                document.querySelector('#weatherDescription').textContent = "Partly Cloudy"
+            }
+
+            //Foggy Weather
+            if(data.current.weather_code > 44 && data.current.weather_code <= 48){
+                document.querySelector('#weatherImage').classList.remove("bi-cloud")
+                document.querySelector('#weatherImage').classList.add("bi-cloud-fog2")
+                document.querySelector('#weatherDescription').textContent = "Fog"
+            }
+
+            //Drizzle
+            if(data.current.weather_code == 51 || data.current.weather_code == 53 || data.current.weather_code == 55){
+                document.querySelector('#weatherImage').classList.remove("bi-cloud")
+                document.querySelector('#weatherImage').classList.add("bi-cloud-drizzle")
+                document.querySelector('#weatherDescription').textContent = "Drizzle"
+            }
+
+            //Snow
+            if(data.current.weather_code == 71 || data.current.weather_code == 73 || data.current.weather_code == 75 || data.current.weather_code == 85 || data.current.weather_code == 86){
+                document.querySelector('#weatherImage').classList.remove("bi-cloud")
+                document.querySelector('#weatherImage').classList.add("bi-cloud-snow")
+                document.querySelector('#weatherDescription').textContent = "snow"
+            }
+
+            //Thunderstorm
+            if(data.current.weather_code == 95 || data.current.weather_code == 96 || data.current.weather_code == 99){
+                document.querySelector('#weatherImage').classList.remove("bi-cloud")
+                document.querySelector('#weatherImage').classList.add("bi-cloud-lightning-rain-fill")
+                document.querySelector('#weatherDescription').textContent = "Thunderstorm"
+            }
+
+
+        })
+    </script>
+</body>
+
+
+<!-- Generative AI Statement: Claude was primarily utilized to help with the generation of an icon that I could use for the app. It also aided me in how to 
+     coneptualize doing this project. No code of any kind was directly taken from Claude in the making of this project. 
+     In the future, I will try to use AI less and less and work at using no AI at all.-->
+</html>
