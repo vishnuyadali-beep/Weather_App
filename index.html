@@ -59,36 +59,45 @@
         // Link:https://open-meteo.com/en/docs
         const strBaseURL = "https://api.open-meteo.com/v1/forecast?latitude=36.1682&longitude=-85.5016&hourly=temperature_2m,relative_humidity_2m,weather_code&current=temperature_2m,relative_humidity_2m,weather_code&temperature_unit=fahrenheit"
         
-
+        //Grabs Data
         fetch(strBaseURL, 
             {
                 method:'GET'
             }
         )
         .then(response => {
-            //if response is good then we are going to do this
+            //if response is good then we convert data to JSON
             return response.json()
         })
         .then(data =>{
-            //console.log(data)
+            //We take the data here and use it to set the temperature and humidity.
             document.querySelector('#temperature').textContent = data.current.temperature_2m + "°"
             document.querySelector('#humidity').textContent = data.current.relative_humidity_2m + "%"
 
+            //Colder Temps
             if(data.current.temperature_2m < 60){
                 document.querySelector('#thermometer').style.color = "lightblue"
             }
+
+            //Warm Temps
             if(data.current.temperature_2m > 60 && data.current.temperature_2m < 75){
                 document.querySelector('#thermometer').style.color = "yellow"
             }
+
+            //Hot Temps
             if(data.current.temperature_2m >= 75){
                 document.querySelector('#thermometer').style.color = "red"
             }
 
+            //Low Range Humidity
             if(data.current.relative_humidity_2m < 30){
                 document.querySelector('#waterDrop').classList.remove("bi-droplet-half")
                 document.querySelector('#waterDrop').classList.add("bi-droplet")
             }
+            
             //The default humidty image I have set is just the half-filled one so it won't change if it isn't in either of these ranges.
+            
+            //High Range Humidity
             if(data.current.relative_humidity_2m > 50){
                 document.querySelector('#waterDrop').classList.remove("bi-droplet-half")
                 document.querySelector('#waterDrop').classList.add("bi-droplet-fill")
